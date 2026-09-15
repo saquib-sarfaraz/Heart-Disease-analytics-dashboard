@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Analytics Dashboard | UCI Dataset Risk Factor Analysis</title>
+    <meta name="description" content="Exploratory data analytics dashboard analyzing demographic and clinical risk factors in the UCI Heart Disease dataset using Python, Flask, and Chart.js.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i data-lucide="activity"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>CardioMetrics</h2>
+                    <span>Data Analytics Suite</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Main Navigation">
+                <a href="#overview" class="nav-item active" id="nav-overview">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#analytics" class="nav-item" id="nav-analytics">
+                    <i data-lucide="pie-chart"></i>
+                    <span>Demographics</span>
+                </a>
+                <a href="#clinical" class="nav-item" id="nav-clinical">
+                    <i data-lucide="stethoscope"></i>
+                    <span>Clinical Factors</span>
+                </a>
+                <a href="#correlation" class="nav-item" id="nav-correlation">
+                    <i data-lucide="grid"></i>
+                    <span>Correlation Heatmap</span>
+                </a>
+                <a href="#statistics" class="nav-item" id="nav-statistics">
+                    <i data-lucide="binary"></i>
+                    <span>Hypothesis Testing</span>
+                </a>
+                <a href="#patients" class="nav-item" id="nav-patients">
+                    <i data-lucide="table"></i>
+                    <span>Patient Explorer</span>
+                </a>
+                <a href="#insights" class="nav-item" id="nav-insights">
+                    <i data-lucide="sparkles"></i>
+                    <span>Key Findings</span>
+                </a>
+                <a href="#about" class="nav-item" id="nav-about">
+                    <i data-lucide="book-open"></i>
+                    <span>About Dataset</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="dataset-badge">
+                    <div class="status-dot"></div>
+                    <div>
+                        <strong>UCI Cleveland Dataset</strong>
+                        <small>303 Clinical Observations</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Mobile Bar -->
+            <header class="mobile-header">
+                <div class="mobile-brand">
+                    <i data-lucide="activity"></i>
+                    <span>CardioMetrics</span>
+                </div>
+                <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation Menu">
+                    <i data-lucide="menu"></i>
+                </button>
+            </header>
+
+            <div class="content-container">
+                <!-- Hero Section -->
+                <section class="hero-section" id="overview">
+                    <div class="hero-meta">
+                        <span class="badge badge-primary">DATA ANALYTICS &amp; VISUALIZATION PROJECT</span>
+                        <span class="badge badge-neutral" id="datasetStatusPill">
+                            <i data-lucide="database"></i> UCI Heart Disease Repository
+                        </span>
+                    </div>
+                    <h1 class="hero-title">Understanding Heart Disease Through Data</h1>
+                    <p class="hero-subtitle">
+                        An exploratory data analytics dashboard analyzing demographic distributions, clinical risk factors, 
+                        and exercise parameters in the UCI Heart Disease (Cleveland) dataset.
+                    </p>
+                    
+                    <!-- Educational Disclaimer -->
+                    <div class="disclaimer-banner" role="alert">
+                        <div class="disclaimer-icon">
+                            <i data-lucide="shield-alert"></i>
+                        </div>
+                        <div class="disclaimer-text">
+                            <strong>Educational &amp; Analytical Disclaimer:</strong>
+                            This dashboard is developed strictly for data analytics, statistical research, and exploratory data visualization. 
+                            It is not a clinical prediction tool or diagnostic device and must not be used for personal medical treatment or decisions.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Global Filter Bar -->
+                <section class="filter-card" aria-label="Global Analytics Filters">
+                    <div class="filter-header">
+                        <div class="filter-title-group">
+                            <i data-lucide="sliders-horizontal"></i>
+                            <h3>Filter Dataset Cohort</h3>
+                            <span class="filter-count-badge" id="filterRecordCount">Analyzing 303 / 303 Records</span>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" id="resetFiltersBtn">
+                            <i data-lucide="rotate-ccw"></i> Reset Filters
+                        </button>
+                    </div>
+                    
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label for="filterGender">Biological Sex</label>
+                            <select id="filterGender" class="form-select">
+                                <option value="all">All (Male &amp; Female)</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filterAgeGroup">Age Cohort</label>
+                            <select id="filterAgeGroup" class="form-select">
+                                <option value="all">All Ages</option>
+                                <option value="<40">&lt; 40 years</option>
+                                <option value="40-49">40 – 49 years</option>
+                                <option value="50-59">50 – 59 years</option>
+                                <option value="60-69">60 – 69 years</option>
+                                <option value="70+">70+ years</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filterOutcome">Heart Disease Status</label>
+                            <select id="filterOutcome" class="form-select">
+                                <option value="all">All Outcomes</option>
+                                <option value="disease">Heart Disease (Present)</option>
+                                <option value="no_disease">No Disease (Absence)</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filterChestPain">Chest Pain Type</label>
+                            <select id="filterChestPain" class="form-select">
+                                <option value="all">All Chest Pain Types</option>
+                                <option value="typical">Typical Angina</option>
+                                <option value="atypical">Atypical Angina</option>
+                                <option value="non_anginal">Non-Anginal Pain</option>
+                                <option value="asymptomatic">Asymptomatic</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Empty Filter State Notice (hidden by default) -->
+                <div class="empty-state-card" id="emptyFilterState" style="display: none;">
+                    <i data-lucide="filter-x"></i>
+                    <h3>No records match the selected filters</h3>
+                    <p>There are no observations in the UCI Cleveland dataset matching your current filter combination. Try clearing or relaxing one or more filter criteria.</p>
+                    <button class="btn btn-primary" id="emptyStateResetBtn">Reset All Filters</button>
+                </div>
+
+                <!-- KPI Metric Cards Grid -->
+                <section class="kpi-grid" aria-label="Key Performance Metrics">
+                    <!-- Total Patients -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap icon-blue">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">TOTAL PATIENTS</span>
+                            <span class="kpi-value" id="kpiTotalPatients">--</span>
+                            <span class="kpi-desc">Cohort records analyzed</span>
+                        </div>
+                    </div>
+
+                    <!-- Disease Cases -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap icon-rose">
+                            <i data-lucide="heart-crack"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">DISEASE CASES</span>
+                            <span class="kpi-value" id="kpiDiseaseCases">--</span>
+                            <span class="kpi-desc">Positive diagnosis cases</span>
+                        </div>
+                    </div>
+
+                    <!-- Disease Prevalence -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap icon-amber">
+                            <i data-lucide="percent"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">DISEASE PREVALENCE</span>
+                            <span class="kpi-value" id="kpiDiseasePrevalence">--</span>
+                            <span class="kpi-desc">Sample disease proportion</span>
+                        </div>
+                    </div>
+
+                    <!-- Average Age -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap icon-emerald">
+                            <i data-lucide="calendar"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">AVERAGE AGE</span>
+                            <span class="kpi-value" id="kpiAverageAge">--</span>
+                            <span class="kpi-desc">Mean cohort patient age</span>
+                        </div>
+                    </div>
+
+                    <!-- Average Cholesterol -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap icon-indigo">
+                            <i data-lucide="droplets"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">AVG CHOLESTEROL</span>
+                            <span class="kpi-value" id="kpiAvgChol">--</span>
+                            <span class="kpi-desc">Serum cholesterol (mg/dl)</span>
+                        </div>
+                    </div>
+
+                    <!-- Average Max Heart Rate -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap icon-purple">
+                            <i data-lucide="zap"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">AVG MAX HEART RATE</span>
+                            <span class="kpi-value" id="kpiAvgMaxHr">--</span>
+                            <span class="kpi-desc">Peak treadmill bpm</span>
+                        </div>
+                    </div>
+
+                    <!-- Average Resting Blood Pressure -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap icon-cyan">
+                            <i data-lucide="gauge"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <span class="kpi-label">AVG RESTING BP</span>
+                            <span class="kpi-value" id="kpiAvgBp">--</span>
+                            <span class="kpi-desc">Hospital admission mm Hg</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Overview Visualizations (Demographics & Categoricals) -->
+                <section class="section-block" id="analytics">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">Demographic &amp; Diagnostic Distributions</h2>
+                            <p class="section-subtitle">Evaluating heart disease prevalence across demographic cohorts and symptomatic classifications</p>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid-2x2">
+                        <!-- Disease Distribution Doughnut -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Disease Prevalence Distribution</h3>
+                                    <span class="chart-subtitle">Proportion of disease presence vs absence</span>
+                                </div>
+                                <span class="chart-badge">Overall Target</span>
+                            </div>
+                            <div class="chart-container doughnut-wrap">
+                                <canvas id="chartDiseaseDist"></canvas>
+                            </div>
+                            <div class="chart-footer-note" id="noteDiseaseDist">
+                                Displays distribution for current cohort.
+                            </div>
+                        </div>
+
+                        <!-- Age Distribution Bar Chart -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Age Cohort Distribution</h3>
+                                    <span class="chart-subtitle">Patient count across 10-year age brackets</span>
+                                </div>
+                                <span class="chart-badge">Demographics</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="chartAgeDist"></canvas>
+                            </div>
+                            <div class="chart-footer-note">
+                                Compares disease vs no-disease patient counts across 5 standardized age brackets.
+                            </div>
+                        </div>
+
+                        <!-- Gender Analysis Bar Chart -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Outcome by Biological Sex</h3>
+                                    <span class="chart-subtitle">Diagnostic volume and rates across Male &amp; Female cohorts</span>
+                                </div>
+                                <span class="chart-badge">Biological Sex</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="chartGenderDist"></canvas>
+                            </div>
+                            <div class="chart-footer-note" id="noteGenderDist">
+                                Observational comparison in this hospital registry sample.
+                            </div>
+                        </div>
+
+                        <!-- Chest Pain Type Bar Chart -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <div>
+                                    <h3 class="chart-title">Chest Pain Type vs Outcome</h3>
+                                    <span class="chart-subtitle">Distribution across 4 clinical angina categories</span>
+                                </div>
+                                <span class="chart-badge">Symptomatology</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="chartChestPainDist"></canvas>
+                            </div>
+                            <div class="chart-footer-note">
+                                Categories mapped according to official UCI clinical documentation.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Clinical Factor Analysis Section -->
+                <section class="section-block" id="clinical">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">Clinical Factor Analysis</h2>
+                            <p class="section-subtitle">Detailed exploratory comparison of physiological biomarkers between disease and no-disease cohorts</p>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Variable Selector Tabs -->
+                    <div class="tabs-container">
+                        <div class="tabs-nav" role="tablist" id="clinicalTabsNav">
+                            <button class="tab-btn active" data-var="thalach" role="tab" aria-selected="true">
+                                <i data-lucide="zap"></i> Max Heart Rate
+                            </button>
+                            <button class="tab-btn" data-var="oldpeak" role="tab" aria-selected="false">
+                                <i data-lucide="trending-up"></i> ST Depression
+                            </button>
+                            <button class="tab-btn" data-var="chol" role="tab" aria-selected="false">
+                                <i data-lucide="droplets"></i> Serum Cholesterol
+                            </button>
+                            <button class="tab-btn" data-var="trestbps" role="tab" aria-selected="false">
+                                <i data-lucide="gauge"></i> Resting BP
+                            </button>
+                            <button class="tab-btn" data-var="age" role="tab" aria-selected="false">
+                                <i data-lucide="calendar"></i> Age
+                            </button>
+                        </div>
+
+                        <!-- Tab Content Body -->
+                        <div class="clinical-content-panel">
+                            <div class="clinical-grid">
+                                <!-- Stats Cards Column -->
+                                <div class="clinical-stats-col">
+                                    <div class="stat-comparison-card">
+                                        <h4 class="stat-comp-title" id="clinicalVarName">Maximum Heart Rate Achieved</h4>
+                                        <p class="stat-comp-unit" id="clinicalVarUnit">Unit: bpm</p>
+                                        
+                                        <div class="stat-values-row">
+                                            <div class="stat-box stat-disease">
+                                                <span class="stat-box-label">Disease Group</span>
+                                                <div class="stat-metric-line">
+                                                    <span>Mean:</span> <strong id="clinicalDisMean">--</strong>
+                                                </div>
+                                                <div class="stat-metric-line">
+                                                    <span>Median:</span> <strong id="clinicalDisMedian">--</strong>
+                                                </div>
+                                                <div class="stat-metric-line">
+                                                    <span>IQR:</span> <strong id="clinicalDisIqr">--</strong>
+                                                </div>
+                                                <div class="stat-metric-line">
+                                                    <span>Std Dev:</span> <strong id="clinicalDisStd">--</strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="stat-box stat-nodisease">
+                                                <span class="stat-box-label">No Disease Group</span>
+                                                <div class="stat-metric-line">
+                                                    <span>Mean:</span> <strong id="clinicalNoDisMean">--</strong>
+                                                </div>
+                                                <div class="stat-metric-line">
+                                                    <span>Median:</span> <strong id="clinicalNoDisMedian">--</strong>
+                                                </div>
+                                                <div class="stat-metric-line">
+                                                    <span>IQR:</span> <strong id="clinicalNoDisIqr">--</strong>
+                                                </div>
+                                                <div class="stat-metric-line">
+                                                    <span>Std Dev:</span> <strong id="clinicalNoDisStd">--</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Analytical Note Box -->
+                                        <div class="clinical-insight-callout">
+                                            <i data-lucide="info"></i>
+                                            <p id="clinicalVarNote">Loading clinical analysis...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Distribution Histogram Column -->
+                                <div class="clinical-chart-col">
+                                    <div class="chart-card">
+                                        <div class="chart-header">
+                                            <h3 class="chart-title">Cohort Distribution Bins</h3>
+                                            <span class="chart-badge">Group Comparison</span>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="chartClinicalHistogram"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Correlation Heatmap Section -->
+                <section class="section-block" id="correlation">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">Correlation Heatmap</h2>
+                            <p class="section-subtitle">Bivariate Pearson correlation coefficients between numeric physiological indicators and disease outcome</p>
+                        </div>
+                    </div>
+
+                    <div class="heatmap-card">
+                        <div class="heatmap-wrapper" id="heatmapContainer">
+                            <!-- Dynamically injected via JavaScript -->
+                            <div class="heatmap-loading">Loading correlation matrix...</div>
+                        </div>
+
+                        <div class="heatmap-legend-wrap">
+                            <span class="legend-text">-1.0 (Strong Negative)</span>
+                            <div class="legend-gradient-bar"></div>
+                            <span class="legend-text">0.0</span>
+                            <div class="legend-gradient-bar-pos"></div>
+                            <span class="legend-text">+1.0 (Strong Positive)</span>
+                        </div>
+
+                        <div class="disclaimer-note">
+                            <i data-lucide="alert-circle"></i>
+                            <span><strong>Statistical Precaution:</strong> Correlation indicates statistical association within this dataset and does not establish causation. Confounding clinical factors may influence these observational relationships.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Hypothesis Testing & Statistical Analysis Section -->
+                <section class="section-block" id="statistics">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">Hypothesis Testing &amp; Statistical Significance</h2>
+                            <p class="section-subtitle">Rigorous statistical evaluation of variables using Mann-Whitney U, Welch's t-test, and Chi-square tests (SciPy)</p>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-legend-strip">
+                            <div class="legend-item">
+                                <span class="badge-status badge-success">Significant (p &lt; 0.05)</span>
+                                <small>Statistically significant difference/association in this sample</small>
+                            </div>
+                            <div class="legend-item">
+                                <span class="badge-status badge-neutral">Not Significant (p ≥ 0.05)</span>
+                                <small>Insufficient evidence to reject null hypothesis at α = 0.05</small>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="hypothesisTestTable">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Variable Type</th>
+                                        <th>Statistical Test</th>
+                                        <th>Test Statistic</th>
+                                        <th>p-Value</th>
+                                        <th>Significance (α = 0.05)</th>
+                                        <th>Scientific Interpretation</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hypothesisTestBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">Computing SciPy statistical tests...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Patient Data Explorer Section -->
+                <section class="section-block" id="patients">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">Patient Data Explorer</h2>
+                            <p class="section-subtitle">Interactive, searchable, sortable, and paginated patient record browser</p>
+                        </div>
+                    </div>
+
+                    <div class="explorer-card">
+                        <div class="explorer-toolbar">
+                            <div class="search-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" id="patientSearchInput" placeholder="Search by ID, age, sex, chest pain, BP..." aria-label="Search patient records">
+                            </div>
+
+                            <div class="toolbar-controls">
+                                <div class="control-group">
+                                    <label for="perPageSelect">Rows per page:</label>
+                                    <select id="perPageSelect" class="form-select select-sm">
+                                        <option value="10" selected>10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="patientsTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-col="patient_id">ID <span class="sort-icon">↕</span></th>
+                                        <th class="sortable" data-col="age">Age <span class="sort-icon">↕</span></th>
+                                        <th class="sortable" data-col="sex_label">Sex <span class="sort-icon">↕</span></th>
+                                        <th class="sortable" data-col="cp_label">Chest Pain Type <span class="sort-icon">↕</span></th>
+                                        <th class="sortable" data-col="trestbps">Resting BP (mm Hg) <span class="sort-icon">↕</span></th>
+                                        <th class="sortable" data-col="chol">Cholesterol (mg/dl) <span class="sort-icon">↕</span></th>
+                                        <th class="sortable" data-col="thalach">Max HR (bpm) <span class="sort-icon">↕</span></th>
+                                        <th class="sortable" data-col="oldpeak">ST Depr. <span class="sort-icon">↕</span></th>
+                                        <th class="sortable" data-col="outcome_label">Diagnosis Outcome <span class="sort-icon">↕</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientsTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4">Loading patient records...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination Footer -->
+                        <div class="pagination-footer">
+                            <span class="page-info" id="pageInfoText">Showing page 1 of 31</span>
+                            <div class="pagination-buttons">
+                                <button class="btn btn-outline btn-sm" id="prevPageBtn" disabled>
+                                    <i data-lucide="chevron-left"></i> Previous
+                                </button>
+                                <div class="page-pill" id="pageCurrentPill">1</div>
+                                <button class="btn btn-outline btn-sm" id="nextPageBtn">
+                                    Next <i data-lucide="chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Key Findings / Insights Section -->
+                <section class="section-block" id="insights">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">Key Analytical Findings</h2>
+                            <p class="section-subtitle">Dynamic findings calculated directly from the current patient dataset</p>
+                        </div>
+                    </div>
+
+                    <div class="insights-grid" id="insightsGrid">
+                        <div class="insight-card">
+                            <div class="insight-loading">Calculating dynamic insights...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- About Dataset & Methodology Section -->
+                <section class="section-block" id="about">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">About Dataset &amp; Methodology</h2>
+                            <p class="section-subtitle">UCI Machine Learning Repository Heart Disease (Cleveland Database) Documentation</p>
+                        </div>
+                    </div>
+
+                    <div class="about-grid">
+                        <div class="about-card">
+                            <h3><i data-lucide="database"></i> Source &amp; Overview</h3>
+                            <p>
+                                The dataset originates from the <strong>Cleveland Clinic Foundation</strong>, contributed by 
+                                Dr. Robert Detrano, M.D., Ph.D. It is maintained within the 
+                                <em>UCI Machine Learning Repository</em> (Heart Disease Database). While the comprehensive database contains 76 raw attributes, 
+                                published research and benchmarks utilize this canonical 14-variable subset of 303 patient cases.
+                            </p>
+                            <p>
+                                <strong>Reference Source:</strong> Detrano, R. et al. (1989). <em>International application of a new probability algorithm for the diagnosis of coronary artery disease.</em> American Journal of Cardiology, 64(5), 304-310.
+                            </p>
+                        </div>
+
+                        <div class="about-card">
+                            <h3><i data-lucide="check-circle"></i> Data Cleaning &amp; Decision Protocol</h3>
+                            <ul>
+                                <li><strong>Missing Value Handling:</strong> The dataset contained 4 missing values in <code>ca</code> and 2 in <code>thal</code> (encoded as <code>?</code>). Rather than discarding 6 valid patient records, full records are preserved for univariate and demographic analyses.</li>
+                                <li><strong>Target Binarization:</strong> Original values 0 (absence) and 1, 2, 3, 4 (presence of coronary artery disease by angiographic severity) are standardly mapped: <code>0 → No Disease</code>, <code>≥ 1 → Heart Disease</code>.</li>
+                                <li><strong>Categorical Humanization:</strong> Encoded integers for chest pain type, biological sex, resting ECG, and thal are mapped to standardized clinical terms.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Canonical Data Dictionary Table -->
+                    <div class="table-card mt-4">
+                        <h3 class="card-inner-title"><i data-lucide="file-text"></i> Canonical 14-Variable Data Dictionary</h3>
+                        <div class="table-responsive">
+                            <table class="data-table dictionary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Attribute</th>
+                                        <th>Clinical Definition</th>
+                                        <th>Data Type</th>
+                                        <th>Reference / Values</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>age</code></td>
+                                        <td>Patient chronological age in years</td>
+                                        <td>Numeric (Continuous)</td>
+                                        <td>Range: 29 – 77 years</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>sex</code></td>
+                                        <td>Biological sex of patient</td>
+                                        <td>Categorical (Binary)</td>
+                                        <td><code>0 = Female</code>, <code>1 = Male</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>cp</code></td>
+                                        <td>Chest pain presentation category</td>
+                                        <td>Categorical (Nominal)</td>
+                                        <td><code>1: Typical Angina</code>, <code>2: Atypical Angina</code>, <code>3: Non-Anginal</code>, <code>4: Asymptomatic</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>trestbps</code></td>
+                                        <td>Resting blood pressure on hospital admission</td>
+                                        <td>Numeric (Continuous)</td>
+                                        <td>Recorded in mm Hg (Normal: &lt; 120 mm Hg)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>chol</code></td>
+                                        <td>Serum cholesterol concentration</td>
+                                        <td>Numeric (Continuous)</td>
+                                        <td>Recorded in mg/dl (Desirable: &lt; 200 mg/dl)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>fbs</code></td>
+                                        <td>Fasting blood sugar &gt; 120 mg/dl</td>
+                                        <td>Categorical (Binary)</td>
+                                        <td><code>1 = True (&gt; 120 mg/dl)</code>, <code>0 = False (≤ 120 mg/dl)</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>restecg</code></td>
+                                        <td>Resting electrocardiographic results</td>
+                                        <td>Categorical (Nominal)</td>
+                                        <td><code>0: Normal</code>, <code>1: ST-T Abnormality</code>, <code>2: LV Hypertrophy</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>thalach</code></td>
+                                        <td>Maximum heart rate achieved during exercise treadmill test</td>
+                                        <td>Numeric (Continuous)</td>
+                                        <td>Recorded in beats per minute (bpm)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>exang</code></td>
+                                        <td>Exercise-induced angina symptom presence</td>
+                                        <td>Categorical (Binary)</td>
+                                        <td><code>1 = Yes</code>, <code>0 = No</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>oldpeak</code></td>
+                                        <td>ST depression induced by exercise relative to rest</td>
+                                        <td>Numeric (Continuous)</td>
+                                        <td>Recorded in millimeters (mm) on ECG trace</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>slope</code></td>
+                                        <td>Slope of peak exercise ST segment</td>
+                                        <td>Categorical (Nominal)</td>
+                                        <td><code>1: Upsloping</code>, <code>2: Flat</code>, <code>3: Downsloping</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ca</code></td>
+                                        <td>Number of major cardiac vessels colored by fluoroscopy</td>
+                                        <td>Numeric (Discrete)</td>
+                                        <td>Range: 0 – 3 vessels</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>thal</code></td>
+                                        <td>Thallium scintigraphy nuclear stress test defect status</td>
+                                        <td>Categorical (Nominal)</td>
+                                        <td><code>3: Normal</code>, <code>6: Fixed Defect</code>, <code>7: Reversible Defect</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>target</code></td>
+                                        <td>Diagnosis of coronary heart disease (&gt; 50% angiographic diameter narrowing)</td>
+                                        <td>Categorical (Binary Target)</td>
+                                        <td><code>0 = Absence (&lt; 50% narrowing)</code>, <code>1 = Presence (&gt; 50% narrowing)</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer class="app-footer">
+                    <p>
+                        Heart Disease Analytics Dashboard &bull; Built with Python, Flask, Pandas, SciPy &amp; Chart.js &bull; 
+                        For academic, educational, and portfolio demonstration purposes.
+                    </p>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
