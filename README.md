@@ -21,7 +21,8 @@
 
 <div align="center">
 
-![Heart Disease Analytics Dashboard](screenshots/dashboard-overview.png)
+![CardioMetrics Overview Dashboard](screenshots/cardio-overview-latest.png)
+
 *Figure 1: CardioMetrics Overview — Real-time KPI cards, educational disclaimer, and global multi-dimensional cohort filter panel.*
 
 </div>
@@ -32,19 +33,19 @@
 <table>
   <tr>
     <td width="33.3%">
-      <img src="screenshots/demographics-analysis.png" alt="Demographic and Diagnostic Distributions">
+      <img src="screenshots/demographics-latest.png">
       <br>
-      <div align="center"><strong>Demographic Distributions</strong><br><sub>Prevalence doughnut, 10-year age cohorts, sex comparison, &amp; chest pain types.</sub></div>
+      <sub><strong>Demographic Distributions:</strong> Prevalence doughnut, 10-year age cohorts, sex comparison, &amp; chest pain types.</sub>
     </td>
     <td width="33.3%">
-      <img src="screenshots/clinical-analysis.png" alt="Clinical Factor Analysis">
+      <img src="screenshots/clinical-factors-latest.png">
       <br>
-      <div align="center"><strong>Clinical Factor Analysis</strong><br><sub>Group descriptive stats (Mean, Median, IQR, Std) &amp; cohort histograms.</sub></div>
+      <sub><strong>Clinical Factor Analysis:</strong> Group descriptive stats (Mean, Median, IQR, Std) &amp; cohort histograms.</sub>
     </td>
     <td width="33.3%">
-      <img src="screenshots/correlation-heatmap.png" alt="Correlation Heatmap">
+      <img src="screenshots/correlation-heatmap-latest.png">
       <br>
-      <div align="center"><strong>Correlation Heatmap</strong><br><sub>Diverging Pearson r matrix with tooltips and non-causal notes.</sub></div>
+      <sub><strong>Correlation Heatmap:</strong> Diverging Pearson r matrix with tooltips and non-causal notes.</sub>
     </td>
   </tr>
 </table>
@@ -176,7 +177,7 @@ flowchart TD
 Displays high-level cohort metrics calculated dynamically from the loaded dataset. The top filter panel allows real-time selection of Biological Sex, Age Cohort, Disease Status, and Chest Pain Type.
 
 ```markdown
-![Dashboard Overview](screenshots/dashboard-overview.png)
+![Dashboard Overview](screenshots/cardio-overview-latest.png)
 ```
 - **Total Patients Analyzed**: 303 records in full sample.
 - **Disease Prevalence**: 45.9% (139 positive cases vs 164 negative cases).
@@ -188,7 +189,7 @@ Displays high-level cohort metrics calculated dynamically from the loaded datase
 Four coordinated Chart.js visualizations that examine how disease outcomes distribute across demographic and symptomatic categories:
 
 ```markdown
-![Demographic Distributions](screenshots/demographics-analysis.png)
+![Demographic Distributions](screenshots/demographics-latest.png)
 ```
 1. **Disease Prevalence Distribution (Doughnut)**: Proportional breakdown between coronary artery disease presence (45.9%) and absence (54.1%).
 2. **Age Cohort Distribution (Grouped Bar)**: 10-year brackets (`<40`, `40–49`, `50–59`, `60–69`, `70+`) segmented by outcome. Highlights the 50–59 cohort as the largest patient group (125 patients) and the 60–69 cohort as exhibiting the highest disease rate (60.5%).
@@ -201,7 +202,7 @@ Four coordinated Chart.js visualizations that examine how disease outcomes distr
 A dedicated biomarker exploration module with tabbed navigation across **Max Heart Rate (`thalach`)**, **ST Depression (`oldpeak`)**, **Serum Cholesterol (`chol`)**, **Resting Blood Pressure (`trestbps`)**, and **Age (`age`)**:
 
 ```markdown
-![Clinical Factor Analysis](screenshots/clinical-analysis.png)
+![Clinical Factor Analysis](screenshots/clinical-factors-latest.png)
 ```
 - **Comparative Descriptive Metrics**: Side-by-side display of Mean, Median, Interquartile Range (IQR), and Standard Deviation for Disease vs. No Disease groups.
 - **5-Bin Group Histogram**: Visualizes the density shift across biomarker ranges for both outcome groups.
@@ -212,7 +213,7 @@ A dedicated biomarker exploration module with tabbed navigation across **Max Hea
 ### 04 — Correlation Heatmap & Inferential Hypothesis Testing
 
 ```markdown
-![Correlation Heatmap](screenshots/correlation-heatmap.png)
+![Correlation Heatmap](screenshots/correlation-heatmap-latest.png)
 ```
 - **Correlation Heatmap**: Diverging visual matrix mapping Pearson correlation coefficients $r$ among continuous clinical variables and disease outcome. Cells feature hover tooltips (`Age ↔ Max Heart Rate: r = -0.39`) and explicit reminders that correlation does not establish causality.
 - **Statistical Significance Table**: Full breakdown of 14 hypothesis tests computed via SciPy:
@@ -366,9 +367,10 @@ Heart Disease Risk Factor Analysis/
 │       └── dashboard.js            # Vanilla JS API orchestrator, Chart.js & state
 │
 └── screenshots/                    # Authentic application UI screenshots
-    ├── dashboard-overview.png      # Hero, KPI cards & global filter panel
-    ├── demographics-analysis.png   # Demographic & categorical distribution charts
-    └── clinical-analysis.png       # Clinical factor stats & comparison histograms
+    ├── cardio-overview-latest.png      # Hero, KPI cards & global filter panel
+    ├── demographics-latest.png         # Demographic & categorical distribution charts
+    ├── clinical-factors-latest.png     # Clinical factor stats & comparison histograms
+    └── correlation-heatmap-latest.png  # Interactive Pearson correlation matrix
 ```
 
 ---
