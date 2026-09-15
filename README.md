@@ -31,15 +31,20 @@
 <div align="center">
 <table>
   <tr>
-    <td width="50%">
+    <td width="33.3%">
       <img src="screenshots/demographics-analysis.png" alt="Demographic and Diagnostic Distributions">
       <br>
-      <div align="center"><strong>Demographic &amp; Diagnostic Distributions</strong><br><sub>Prevalence doughnut, 10-year age brackets, sex comparison, and chest pain categories.</sub></div>
+      <div align="center"><strong>Demographic Distributions</strong><br><sub>Prevalence doughnut, 10-year age cohorts, sex comparison, &amp; chest pain types.</sub></div>
     </td>
-    <td width="50%">
+    <td width="33.3%">
       <img src="screenshots/clinical-analysis.png" alt="Clinical Factor Analysis">
       <br>
-      <div align="center"><strong>Clinical Factor Analysis</strong><br><sub>Group descriptive stats (Mean, Median, IQR, Std) and cohort distribution histograms.</sub></div>
+      <div align="center"><strong>Clinical Factor Analysis</strong><br><sub>Group descriptive stats (Mean, Median, IQR, Std) &amp; cohort histograms.</sub></div>
+    </td>
+    <td width="33.3%">
+      <img src="screenshots/correlation-heatmap.png" alt="Correlation Heatmap">
+      <br>
+      <div align="center"><strong>Correlation Heatmap</strong><br><sub>Diverging Pearson r matrix with tooltips and non-causal notes.</sub></div>
     </td>
   </tr>
 </table>
@@ -205,6 +210,10 @@ A dedicated biomarker exploration module with tabbed navigation across **Max Hea
 ---
 
 ### 04 — Correlation Heatmap & Inferential Hypothesis Testing
+
+```markdown
+![Correlation Heatmap](screenshots/correlation-heatmap.png)
+```
 - **Correlation Heatmap**: Diverging visual matrix mapping Pearson correlation coefficients $r$ among continuous clinical variables and disease outcome. Cells feature hover tooltips (`Age ↔ Max Heart Rate: r = -0.39`) and explicit reminders that correlation does not establish causality.
 - **Statistical Significance Table**: Full breakdown of 14 hypothesis tests computed via SciPy:
   - Non-parametric Mann-Whitney U test (evaluating rank differences).
@@ -477,4 +486,3 @@ For technical recruiters, professors, and engineering hiring managers, this proj
 **Saquib Sarfaraz**  
 Computer Science Engineering  
 *Focus: Data Analytics, Full-Stack Web Development, and Machine Learning Systems*
-# Heart-Disease-analytics-dashboard
